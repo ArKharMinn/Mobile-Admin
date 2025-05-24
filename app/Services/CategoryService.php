@@ -11,7 +11,7 @@ Class CategoryService{
     }
 
     public function getCategory(Request $request){
-       return Product::where('category_id',$request->id)->get();
+       return Product::where('category_id',$request->id)->with('category')->get();
 
     }
 }

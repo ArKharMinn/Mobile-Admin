@@ -11,6 +11,6 @@ class CreateProduct extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        return ProductResource::index();
+        return ProductResource::getUrl('index');
     }
 }

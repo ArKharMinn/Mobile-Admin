@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 Class ProductService{
 public function index()
     {
-       return Product::all();
+       return Product::with('category')->get();
+
     }
 
     public function detail(Request $request)

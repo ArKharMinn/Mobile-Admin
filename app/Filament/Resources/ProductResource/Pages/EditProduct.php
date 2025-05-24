@@ -16,8 +16,9 @@ class EditProduct extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
-    protected function getRedirectUrl(): string
+
+     protected function getRedirectUrl(): string
     {
-        return ProductResource::index();
+        return ProductResource::getUrl('index');
     }
 }
