@@ -7,7 +7,6 @@ use Filament\Tables;
 use App\Models\Product;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
@@ -17,12 +16,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\FileUpload;
-use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Category;
 use Filament\Tables\Columns\ImageColumn;
 
@@ -36,37 +31,73 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
-                Grid::make(2)
-                    ->schema([
-                        Section::make([
+  Section::make('Product Information')
+        ->schema([
+            Grid::make()
+                ->schema([
+                    Section::make('Basic Details')
+                        ->schema([
                             TextInput::make('name')
-                                ->label('Name')
-                                ->required(),
+                                ->label('Product Name')
+                                ->placeholder('Enter product name')
+                                ->required()
+                                ->maxLength(255)
+                                ->columnSpanFull(),
 
-                            TextInput::make('price')
-                                ->label('Price')
-                                ->required(),
-                            Select::make('category_id')
-                                ->label('Category')
-                                ->options(
-                                    \App\Models\Category::all()->pluck('name', 'id')
-                                )
-                                ->required(),
-                        ])
-                            ->columnSpan(1),
-                        Section::make([
-                            FileUpload::make('image')
-                                ->label('Image')
-                                ->required(),
+                            Grid::make(2)
+                                ->schema([
+                                    TextInput::make('price')
+                                        ->label('Price')
+                                        ->numeric()
+                                        ->prefix('$')
+                                        ->inputMode('decimal')
+                                        ->step(0.01)
+                                        ->required(),
+
+                                    Select::make('category_id')
+                                        ->label('Category')
+                                        ->placeholder('Select a category')
+                                        ->searchable()
+                                        ->preload()
+                                        ->options(fn() => Category::pluck('name', 'id'))
+                                        ->required(),
+                                ]),
 
                             Textarea::make('description')
                                 ->label('Description')
-                                ->required(),
+                                ->placeholder('Enter detailed product description')
+                                ->required()
+                                ->columnSpanFull()
+                                ->rows(4),
                         ])
-                            ->columnSpan(1),
-                    ]),
+                        ->columns(1)
+                        ->columnSpan(['lg' => 2]),
 
-            ]);
+                    Section::make('Product Image')
+                        ->schema([
+                            FileUpload::make('image')
+                                ->label('Main Product Image')
+                                ->image()
+                                ->directory('products')
+                                ->imageEditor()
+                                ->imageResizeMode('cover')
+                                ->imageCropAspectRatio('1:1')
+                                ->imagePreviewHeight('300')
+                                ->loadingIndicatorPosition('left')
+                                ->panelAspectRatio('1:1')
+                                ->panelLayout('integrated')
+                                ->removeUploadedFileButtonPosition('right')
+                                ->uploadButtonPosition('left')
+                                ->uploadProgressIndicatorPosition('left')
+                                ->required()
+                                ->columnSpanFull(),
+                        ])
+                        ->columnSpan(['lg' => 1]),
+                ])
+                ->columns(3),
+        ])
+        ->columns(1),
+  ]);
     }
 
     public static function table(Table $table): Table
@@ -75,54 +106,46 @@ class ProductResource extends Resource
             ->columns([
                 ImageColumn::make('image')
                     ->label('Image'),
+
                 TextColumn::make('name')
                     ->label('Name')
                     ->sortable()
                     ->searchable(),
+
                 TextColumn::make('category.name')
                     ->label('Category')
                     ->badge()
                     ->color('danger')
                     ->sortable()
                     ->searchable(),
+
                 TextColumn::make('price')
                     ->label('Price')
                     ->sortable()
+                    ->badge()
                     ->searchable(),
+
                 TextColumn::make('description')
                     ->label('Description')
                     ->sortable()
-                    ->formatStateUsing(fn($state) => Str::limit($state, 30, '...'))
+                    ->limit(20)
                     ->searchable(),
-                SelectColumn::make('status')
-                    ->options([
-                        'active' => 'active',
-                        'inactive' => 'inactive'
-                    ])
-                    ->searchable()
-                    ->sortable()
-                    ->label('Status'),
+
                 TextColumn::make('created_at')
-                    ->label('Created Data')
+                    ->label('Created Date')
                     ->sortable()
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->options([
-                        'active' => 'active',
-                        'inactive' => 'inactive'
-                    ]),
+
                 SelectFilter::make('category_id')
                     ->label('Category')
-                    ->options([
-                        Category::all()->pluck('name', 'id')->toArray()
-                    ])
+                    ->searchable()
+                    ->options(fn()=>Category::pluck('name','id'))
             ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ViewAction::make(),
                 ]),
             ])
             ->bulkActions([

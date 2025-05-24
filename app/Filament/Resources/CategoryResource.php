@@ -43,24 +43,13 @@ class CategoryResource extends Resource
                     ->sortable()
                     ->badge()
                     ->searchable(),
-                SelectColumn::make('status')
-                    ->options([
-                        'active' => 'active',
-                        'inactive' => 'inactive'
-                    ])
-                    ->searchable()
-                    ->sortable()
-                    ->label('Status'),
+
                 TextColumn::make('created_at')
-                    ->label('Created Data')
+                    ->label('Created Date')
                     ->sortable()
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->options([
-                        'active' => 'active',
-                        'inactive' => 'inactive'
-                    ])
+               //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

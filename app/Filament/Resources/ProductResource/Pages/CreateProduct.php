@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\ProductResource\Pages;
 
 use App\Filament\Resources\ProductResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateProduct extends CreateRecord
@@ -12,6 +11,6 @@ class CreateProduct extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        return url()->previous();
+        return ProductResource::index();
     }
 }
